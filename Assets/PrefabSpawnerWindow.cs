@@ -11,6 +11,8 @@ public class PrefabSpawnerWindow : EditorWindow {
     GameObject prefab;
     Transform parentTransform;
 
+    bool keepPrefabLink = true;
+
     int amount;
     Vector3 offset;
 
@@ -28,6 +30,8 @@ public class PrefabSpawnerWindow : EditorWindow {
     {
         prefab = EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false) as GameObject;
         parentTransform = EditorGUILayout.ObjectField("Parent", parentTransform, typeof(Transform), true) as Transform;
+
+        keepPrefabLink = EditorGUILayout.Toggle("Keep Prefab Link", keepPrefabLink);
         
         amount = EditorGUILayout.IntField("SpawnAmount", amount);
         offset = EditorGUILayout.Vector3Field("Offset", offset);
@@ -37,7 +41,7 @@ public class PrefabSpawnerWindow : EditorWindow {
         {
             if (GUILayout.Button("Spawn"))
             {
-                InstantiateObjects(prefab, amount, offset, parentTransform);
+                InstantiateObjects(prefab, amount, offset, parentTransform, keepPrefabLink);
             }
         }
         EditorGUI.EndDisabledGroup();
@@ -60,12 +64,26 @@ public class PrefabSpawnerWindow : EditorWindow {
         }
     }
 
-    private static void InstantiateObjects(GameObject prefab, int amount, Vector3 offset, Transform parent = null)
+    private static void InstantiateObjects(GameObject prefab, int amount, Vector3 offset, Transform parent = null, bool keepPrefabLink = true)
     {
-        for (int i = 0; i < amount; i++)
+        GameObject obj;
+        if (keepPrefabLink)
         {
-            GameObject obj = Instantiate(prefab, offset * i, Quaternion.identity, parent);
-            Undo.RegisterCreatedObjectUndo(obj, "InstantiatePrefabs");
+            for (int i = 0; i < amount; i++)
+            {
+                obj = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+                obj.transform.parent = parent;
+                obj.transform.localPosition = offset * i;
+                Undo.RegisterCreatedObjectUndo(obj, "InstantiatePrefabs");
+            }
+        }
+        else
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                obj = Instantiate(prefab, offset * i, Quaternion.identity, parent);
+                Undo.RegisterCreatedObjectUndo(obj, "InstantiatePrefabs");
+            }
         }
     }
 }
