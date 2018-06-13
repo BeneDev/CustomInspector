@@ -36,6 +36,11 @@ public class PrefabSpawnerWindow : EditorWindow {
         keepPrefabLink = EditorGUILayout.Toggle("Keep Prefab Link", keepPrefabLink);
         
         amount = EditorGUILayout.IntField("SpawnAmount", amount);
+        if(amount < 1)
+        {
+            amount = 1;
+        }
+
         offset = EditorGUILayout.Vector3Field("Offset", offset);
 
         rotation = EditorGUILayout.Vector3Field("Rotation", rotation);
