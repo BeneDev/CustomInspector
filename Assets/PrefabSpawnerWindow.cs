@@ -18,6 +18,8 @@ public class PrefabSpawnerWindow : EditorWindow {
     Vector3 offset;
     Vector3 rotation;
 
+    string saveFileName;
+    string loadFileName;
 
     Vector2 scrollViewPos;
 
@@ -55,7 +57,7 @@ public class PrefabSpawnerWindow : EditorWindow {
             offset = EditorGUILayout.Vector3Field("Offset", offset);
 
             rotation = EditorGUILayout.Vector3Field("Rotation", rotation);
-            relativeRotation = EditorGUILayout.Toggle("Relative Rotation", relativeRotation);
+            relativeRotation = EditorGUILayout.Toggle(new GUIContent("Relative Rotation", "Determines if the rotation will be relative to the last object's rotation."), relativeRotation);
 
             // Geschweifte Klammern haben keine syntaktische wirkung, falls nicht vorgegeben. Hier rücken sie nur ein
             EditorGUILayout.BeginHorizontal();
@@ -70,7 +72,7 @@ public class PrefabSpawnerWindow : EditorWindow {
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.BeginDisabledGroup(!prefab || !parentTransform);
                 {
-                    if (GUILayout.Button("Spawn"))
+                    if (GUILayout.Button("Spawn Objects"))
                     {
                         InstantiateObjects(prefab, amount, offset, rotation, relativeRotation, parentTransform, keepPrefabLink);
                     }
@@ -78,8 +80,36 @@ public class PrefabSpawnerWindow : EditorWindow {
                 EditorGUI.EndDisabledGroup();
             }
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            {
+                saveFileName = EditorGUILayout.TextField("Save As", saveFileName);
+                if (GUILayout.Button("Save Settings"))
+                {
+                    SaveSettings();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            {
+                loadFileName = EditorGUILayout.TextField("Load", loadFileName);
+                if (GUILayout.Button("Load Settings"))
+                {
+                    LoadSettings();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
         }
         EditorGUILayout.EndScrollView();
+    }
+
+    private static void SaveSettings()
+    {
+
+    }
+
+    private static void LoadSettings()
+    {
+
     }
 
     private static void DestroyObjects(Transform parent)
