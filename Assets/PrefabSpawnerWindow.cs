@@ -14,7 +14,9 @@ public class PrefabSpawnerWindow : EditorWindow {
     bool keepPrefabLink = true;
 
     int amount;
+    bool relativeRotation;
     Vector3 offset;
+    Vector3 rotation;
 
     #endregion
 
@@ -36,23 +38,30 @@ public class PrefabSpawnerWindow : EditorWindow {
         amount = EditorGUILayout.IntField("SpawnAmount", amount);
         offset = EditorGUILayout.Vector3Field("Offset", offset);
 
+        rotation = EditorGUILayout.Vector3Field("Rotation", rotation);
+        relativeRotation = EditorGUILayout.Toggle("Relative Rotation", relativeRotation);
+
         // Geschweifte Klammern haben keine syntaktische wirkung, falls nicht vorgegeben. Hier rücken sie nur ein
-        EditorGUI.BeginDisabledGroup(!prefab || !parentTransform);
+        EditorGUILayout.BeginHorizontal();
         {
-            if (GUILayout.Button("Spawn"))
+            EditorGUI.BeginDisabledGroup(!parentTransform);
             {
-                InstantiateObjects(prefab, amount, offset, parentTransform, keepPrefabLink);
+                if (GUILayout.Button("Delete Objects"))
+                {
+                    DestroyObjects(parentTransform);
+                }
             }
-        }
-        EditorGUI.EndDisabledGroup();
-        EditorGUI.BeginDisabledGroup(!parentTransform);
-        {
-            if (GUILayout.Button("Delete Objects"))
+            EditorGUI.EndDisabledGroup();
+            EditorGUI.BeginDisabledGroup(!prefab || !parentTransform);
             {
-                DestroyObjects(parentTransform);
+                if (GUILayout.Button("Spawn"))
+                {
+                    InstantiateObjects(prefab, amount, offset, rotation, relativeRotation, parentTransform, keepPrefabLink);
+                }
             }
+            EditorGUI.EndDisabledGroup();
         }
-        EditorGUI.EndDisabledGroup();
+        EditorGUILayout.EndHorizontal();
 
     }
 
@@ -64,16 +73,30 @@ public class PrefabSpawnerWindow : EditorWindow {
         }
     }
 
-    private static void InstantiateObjects(GameObject prefab, int amount, Vector3 offset, Transform parent = null, bool keepPrefabLink = true)
+    private static void InstantiateObjects(GameObject prefab, int amount, Vector3 offset, Vector3 rotation, bool relativeRotation = false, Transform parent = null, bool keepPrefabLink = true)
     {
         GameObject obj;
+        Vector3 pos = Vector3.zero;
+        Quaternion rot = Quaternion.identity;
+
         if (keepPrefabLink)
         {
             for (int i = 0; i < amount; i++)
             {
+                rot = Quaternion.Euler(rotation * i);
+                if (relativeRotation)
+                {
+                    // Rotate the offset vector with the rot quaternion
+                    pos = pos + (rot * offset);
+                }
+                else
+                {
+                    pos = offset * i;
+                }
                 obj = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
                 obj.transform.parent = parent;
-                obj.transform.localPosition = offset * i;
+                obj.transform.localPosition = pos;
+                obj.transform.localRotation = rot;
                 Undo.RegisterCreatedObjectUndo(obj, "InstantiatePrefabs");
             }
         }
@@ -81,7 +104,19 @@ public class PrefabSpawnerWindow : EditorWindow {
         {
             for (int i = 0; i < amount; i++)
             {
-                obj = Instantiate(prefab, offset * i, Quaternion.identity, parent);
+                rot = Quaternion.Euler(rotation * i);
+                if (relativeRotation)
+                {
+                    pos = pos + (rot * offset);
+                }
+                else
+                {
+                    pos = offset * i;
+                }
+                obj = Instantiate(prefab);
+                obj.transform.parent = parent;
+                obj.transform.localPosition = pos;
+                obj.transform.localRotation = rot;
                 Undo.RegisterCreatedObjectUndo(obj, "InstantiatePrefabs");
             }
         }
