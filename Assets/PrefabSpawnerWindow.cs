@@ -18,6 +18,9 @@ public class PrefabSpawnerWindow : EditorWindow {
     Vector3 offset;
     Vector3 rotation;
 
+
+    Vector2 scrollViewPos;
+
     #endregion
 
     [MenuItem("Tools/PrefabSpawner %#Ö")]
@@ -30,44 +33,53 @@ public class PrefabSpawnerWindow : EditorWindow {
     // For packing in fields and 
     private void OnGUI()
     {
-        prefab = EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false) as GameObject;
-        parentTransform = EditorGUILayout.ObjectField("Parent", parentTransform, typeof(Transform), true) as Transform;
-
-        keepPrefabLink = EditorGUILayout.Toggle("Keep Prefab Link", keepPrefabLink);
-        
-        amount = EditorGUILayout.IntField("SpawnAmount", amount);
-        if(amount < 1)
+        scrollViewPos = EditorGUILayout.BeginScrollView(scrollViewPos);
         {
-            amount = 1;
-        }
-
-        offset = EditorGUILayout.Vector3Field("Offset", offset);
-
-        rotation = EditorGUILayout.Vector3Field("Rotation", rotation);
-        relativeRotation = EditorGUILayout.Toggle("Relative Rotation", relativeRotation);
-
-        // Geschweifte Klammern haben keine syntaktische wirkung, falls nicht vorgegeben. Hier rücken sie nur ein
-        EditorGUILayout.BeginHorizontal();
-        {
-            EditorGUI.BeginDisabledGroup(!parentTransform);
+            if (!prefab)
             {
-                if (GUILayout.Button("Delete Objects"))
-                {
-                    DestroyObjects(parentTransform);
-                }
+                // "Sieht halt schon ein bisschen räudig aus." - Utz Stauder, 2018
+                // GUILayout.Label("Please assign a prefab reference.", GUI.tooltip);
+                EditorGUILayout.HelpBox("Please assign a prefab reference.", MessageType.Info);
             }
-            EditorGUI.EndDisabledGroup();
-            EditorGUI.BeginDisabledGroup(!prefab || !parentTransform);
-            {
-                if (GUILayout.Button("Spawn"))
-                {
-                    InstantiateObjects(prefab, amount, offset, rotation, relativeRotation, parentTransform, keepPrefabLink);
-                }
-            }
-            EditorGUI.EndDisabledGroup();
-        }
-        EditorGUILayout.EndHorizontal();
+            prefab = EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false) as GameObject;
+            parentTransform = EditorGUILayout.ObjectField(new GUIContent("Parent", "All prefabs will be parented to this transform"), parentTransform, typeof(Transform), true) as Transform;
 
+            keepPrefabLink = EditorGUILayout.Toggle("Keep Prefab Link", keepPrefabLink);
+
+            amount = EditorGUILayout.IntField("SpawnAmount", amount);
+            if (amount < 1)
+            {
+                amount = 1;
+            }
+
+            offset = EditorGUILayout.Vector3Field("Offset", offset);
+
+            rotation = EditorGUILayout.Vector3Field("Rotation", rotation);
+            relativeRotation = EditorGUILayout.Toggle("Relative Rotation", relativeRotation);
+
+            // Geschweifte Klammern haben keine syntaktische wirkung, falls nicht vorgegeben. Hier rücken sie nur ein
+            EditorGUILayout.BeginHorizontal();
+            {
+                EditorGUI.BeginDisabledGroup(!parentTransform);
+                {
+                    if (GUILayout.Button("Delete Objects"))
+                    {
+                        DestroyObjects(parentTransform);
+                    }
+                }
+                EditorGUI.EndDisabledGroup();
+                EditorGUI.BeginDisabledGroup(!prefab || !parentTransform);
+                {
+                    if (GUILayout.Button("Spawn"))
+                    {
+                        InstantiateObjects(prefab, amount, offset, rotation, relativeRotation, parentTransform, keepPrefabLink);
+                    }
+                }
+                EditorGUI.EndDisabledGroup();
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+        EditorGUILayout.EndScrollView();
     }
 
     private static void DestroyObjects(Transform parent)
