@@ -16,10 +16,10 @@ public class PrefabSpawnerCustomInspector : Editor {
         //script.spawnCount = EditorGUILayout.IntField("Spawn Count", script.spawnCount);
         //script.relativeOffset = EditorGUILayout.Vector3Field("Relative Offset", script.relativeOffset);
 
-        if (GUILayout.Button("Spawn"))
-        {
-            script.SpawnObjects(script.prefab, script.spawnCount, script.offset);
-        }
+        //if (GUILayout.Button("Spawn"))
+        //{
+        //    script.SpawnObjects(script.prefab, script.spawnCount, script.offset);
+        //}
     }
 
 }
